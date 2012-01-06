@@ -35,8 +35,6 @@ import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
 import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.hql.spi.QueryTranslatorFactory;
 
-import com.kmw.rssbasedworkflow.Util;
-
 
 public class HQLRunner extends JFrame implements ActionListener, ListSelectionListener{
 	
@@ -47,6 +45,7 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 	private JPanel pnlTopAction = new JPanel();	
 	private JPanel pnlBottom = new JPanel(new BorderLayout());	
 	private JSplitPane pnlSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlTop, pnlBottom);
+	private JTabbedPane tpane = new JTabbedPane();	
 	
 	// all components
 	private JTextArea txtHQL = new JTextArea(6,100);
@@ -56,8 +55,8 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 	private JList lstHistory = new JList();
 	private JTable tblResult = new JTable();
 	private JTextArea txtGeneratedSQL = new JTextArea();
-	private JTabbedPane tpane = new JTabbedPane();
 
+	// model holds all the previously executed queries...
 	private List<String> lstQueryHistory = new ArrayList<String>();
 	
 	private HQLRunner(SessionFactory sessFact){
@@ -67,9 +66,9 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 		this.setMinimumSize(new Dimension(800,600));
 		this.setTitle("HQL Runner");
 		
-		this.pnlTop.setBorder(new javax.swing.border.TitledBorder("Enter your HQL below nad hit 'Run'"));
+		this.pnlTop.setBorder(new javax.swing.border.TitledBorder("Enter your HQL below and hit 'Run'"));
 		this.pnlTop.add(this.txtHQL, BorderLayout.CENTER);
-		this.txtHQL.setText("Your Query goes here...");
+		this.txtHQL.setText("select d.distance/1609 , j.jobTitle \n from Job j, Distance d  \nwhere j.user.location = d.startingLocation and j.location = d.destinationLocation order by d.distance");
 		this.pnlTopAction.add(new JLabel(" Limit"));
 		this.pnlTopAction.add(this.cmbLimit);
 		cmbLimit.setSelectedIndex(1); // limit 100 is selected by default...
@@ -238,6 +237,7 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 		else if (e.getSource() == btnRunSQL) this.runSQL(txtHQL.getText());
 	}
 	
+	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		txtHQL.setText(lstQueryHistory.get(lstHistory.getSelectedIndex()));
 	}
