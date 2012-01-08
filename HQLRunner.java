@@ -34,6 +34,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory;
 import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.hql.spi.QueryTranslatorFactory;
+import org.hibernate.transform.Transformers;
 
 
 public class HQLRunner extends JFrame implements ActionListener, ListSelectionListener{
@@ -42,19 +43,19 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 	
 	// all containers 
 	private JPanel pnlTop = new JPanel(new BorderLayout());
-	private JPanel pnlTopAction = new JPanel();	
 	private JPanel pnlBottom = new JPanel(new BorderLayout());	
 	private JSplitPane pnlSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlTop, pnlBottom);
-	private JTabbedPane tpane = new JTabbedPane();	
-	
+
 	// all components
 	private JTextArea txtHQL = new JTextArea(6,100);
+	
 	private JComboBox cmbLimit = new JComboBox(new String[]{"All", "100", "1000", "10000"});
 	private JButton btnRunHQL = new JButton("Run HQL Query");
 	private JButton btnRunSQL = new JButton("Run SQL Query");
-	private JList lstHistory = new JList();
+	
 	private JTable tblResult = new JTable();
 	private JTextArea txtGeneratedSQL = new JTextArea();
+	private JList lstHistory = new JList();	
 
 	// model holds all the previously executed queries...
 	private List<String> lstQueryHistory = new ArrayList<String>();
@@ -68,29 +69,31 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 		
 		this.pnlTop.setBorder(new javax.swing.border.TitledBorder("Enter your HQL below and hit 'Run'"));
 		this.pnlTop.add(this.txtHQL, BorderLayout.CENTER);
-		this.txtHQL.setText("select d.distance/1609 , j.jobTitle \n from Job j, Distance d  \nwhere j.user.location = d.startingLocation and j.location = d.destinationLocation order by d.distance");
-		this.pnlTopAction.add(new JLabel(" Limit"));
-		this.pnlTopAction.add(this.cmbLimit);
-		cmbLimit.setSelectedIndex(1); // limit 100 is selected by default...
-		this.pnlTopAction.add(new JLabel("Rows "));
-		this.pnlTopAction.add(this.btnRunHQL);
+		this.cmbLimit.setSelectedIndex(1); // limit 100 is selected by default...
 		this.btnRunHQL.addActionListener(this);
 		this.btnRunSQL.addActionListener(this);
-		this.pnlTopAction.add(this.btnRunSQL);
 		
-		this.pnlTop.add(this.pnlTopAction, BorderLayout.SOUTH);
+		this.pnlTop.add( new JPanel() {{ 
+							add(new JLabel(" Limit"));
+							add(cmbLimit);
+							add(new JLabel("Rows "));
+							add(btnRunHQL);
+							add(btnRunSQL);			
+						}}
+						, BorderLayout.SOUTH);
 		
-		this.pnlBottom.add(this.tpane, BorderLayout.CENTER);
-
-		tpane.addTab("Result", new JScrollPane(tblResult));
-		tpane.addTab("Generated SQL", new JScrollPane(txtGeneratedSQL));
-		tpane.addTab("History", lstHistory);
+		this.pnlBottom.add( new JTabbedPane() {{
+								addTab("Result", new JScrollPane(tblResult));
+								addTab("Generated SQL", new JScrollPane(txtGeneratedSQL));
+								addTab("History", lstHistory);
+							}}, BorderLayout.CENTER);
 		
 		lstHistory.addListSelectionListener(this);
 		lstHistory.setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
+
+		this.pnlSplit.setDividerLocation(0.4d);
 		
 		this.getContentPane().add(this.pnlSplit);
-		this.pnlSplit.setDividerLocation(0.4d);
 		
 		this.setVisible(true);
 	}
@@ -115,6 +118,7 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 	}	
 	
 	private void addToHistory(String strHQL){
+		
 		lstQueryHistory.add(strHQL);
 		lstHistory.setModel(new ListModel() {
 			@Override public void removeListDataListener(ListDataListener arg0) {}
@@ -215,7 +219,7 @@ public class HQLRunner extends JFrame implements ActionListener, ListSelectionLi
 		});		
 	}
 
-	// Source: from http://narcanti.keyboardsamurais.de/hibernate-hql-to-sql-translation.html
+	// ref: http://narcanti.keyboardsamurais.de/hibernate-hql-to-sql-translation.html
 	public String toSql(String hqlQueryText){
 
 	    if (hqlQueryText!=null && hqlQueryText.trim().length()>0){
