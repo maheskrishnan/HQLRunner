@@ -7,3 +7,8 @@ How to use
 2. Make sure you have the hibernate artifacts are configured properly.
 3. update the main method with your session factory
 4. run the main method
+
+Screenshot
+------------------
+
+![Image](https://raw.githubusercontent.com/maheskrishnan/HQLRunner/master/screenshot.png)
